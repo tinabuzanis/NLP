@@ -221,9 +221,9 @@ def evaluate(model, eval_dataloader, device):
             input_ids, labels = batch['input_ids'].to(device), batch['labels'].to(device)
             logits = model(input_ids)
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), labels.view(-1))
-            loss += total_eval_loss
-            n_correct += (torch.argmax(logits, dim=-1)==labels).sum().item()
-            n_examples += len(labels)
+            total_eval_loss = total_eval_loss + loss
+            n_correct = n_correct + (torch.argmax(logits, dim=-1)==labels).sum().item()
+            n_examples = n_examples + len(labels)
 
 
 
