@@ -315,6 +315,20 @@ def main():
     # Documentation: https://huggingface.co/docs/datasets/about_map_batch.html
     # YOUR ANSRWER HERE:
 
+
+## ───────────────────────────────────── ▼ ─────────────────────────────────────
+# {{{                         --     Inline Q1     --
+#···············································································
+# .map function applies a function to all the elements in a given table. This 
+# can be done individually or in batches, as is the case with this function. 
+# Batched means that the mapping is done in batches. 
+# We are using multiple workers to be able to do this concurrently, which can
+# speed up the process to an extent. 
+#                                                                            }}}
+## ─────────────────────────────────────────────────────────────────────────────
+
+
+
     def group_texts(examples):
         """
         Args:
@@ -346,6 +360,27 @@ def main():
 
     # Inline question 2: What does group_texts do? What is the purpose of it?
     # YOUR ANSWER HERE:
+
+
+
+## ───────────────────────────────────── ▼ ─────────────────────────────────────
+# {{{                         --     INLINE Q2     --
+#···············································································
+# group_texts groups the batches of text. 
+# It takes a batch of tokinzed data and splits it into chinks of length 
+# specified by args.max_seq_length. 
+
+# it does this by transforming examples into a list called
+# concatenated_examples, and then making sure the batch will evenly divide
+# into chunks of max_seq_length by rounding down the length as necessary.
+
+# Once all the data has been 'chunked', we go through chunk by chunk, and 
+# separate out the input_ids and labels, returning the final result in 
+# dict.
+#                                                                            }}}
+## ─────────────────────────────────────────────────────────────────────────────
+
+
 
     # Note that with `batched=True`, this map processes 1,000 texts together, so group_texts throws away a remainder
     # for each of those groups of 1,000 texts. You can adjust that batch_size here but a higher value might be slower

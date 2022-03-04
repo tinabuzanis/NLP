@@ -239,13 +239,13 @@ class TransformerLM(nn.Module):
             save_path: directory to save the model
         """
         config = {
-            # "num_layers": self.encoder.num_layers,
-            # "hidden": self.encoder.hidden,
-            # "num_heads": self.encoder.num_heads,
-            # "fcn_hidden": self.encoder.fcn_hidden,
-            # "vocab_size": self.encoder.vocab_size,
-            # "max_seq_len": self.encoder.max_seq_len,
-            # "dropout": self.encoder.dropout_rate,
+            "num_layers": self.encoder.num_layers,
+            "hidden": self.encoder.hidden,
+            "num_heads": self.encoder.num_heads,
+            "fcn_hidden": self.encoder.fcn_hidden,
+            "vocab_size": self.encoder.vocab_size,
+            "max_seq_len": self.encoder.max_seq_len,
+            "dropout": self.encoder.dropout_rate,
         }
 
         with open(os.path.join(save_path, "model_config.json"), "w") as f:
