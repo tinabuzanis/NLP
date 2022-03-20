@@ -96,7 +96,6 @@ class MultiHeadAttention(nn.Module):
             # print(scores)
             scores = scores.reshape(bs, -1, attended_seq)
             scores.masked_fill_(key_padding_mask.bool().unsqueeze(1), float('-inf'))
-            print(scores.shape)
             scores = scores.reshape(bs*self.num_heads, attending_seq, attended_seq)
 
             # YOUR CODE ENDS HERE
