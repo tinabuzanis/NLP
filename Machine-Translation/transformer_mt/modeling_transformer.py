@@ -134,17 +134,28 @@ class TransformerDecoderLayer(nn.Module):
         # 10. LayerNorm
         # Note : Please write shape of the tensor for each line of code
         # YOUR CODE STARTS HERE (our implementation is about 10 lines)
-        residual = decoder_hidden_states
-        x = self.self_attention(decoder_hidden_states, key_padding_mask=key_padding_mask)
-        x = self.self_att_layer_norm(decoder_hidden_states + residual)
-        x = self.cross_attention(decoder_hidden_states, key_padding_mask=key_padding_mask)
-        x = self.cross_att_layer_norm(decoder_hidden_states + residual)
+       #  residual = decoder_hidden_states
+        trg = decoder_hidden_states
+        x = self.self_attention(trg, encoder_hidden_states, key_padding_mask=key_padding_mask)
+        x = self.self_att_layer_norm(trg + x)
+       
+        x2 = self.cross_attention(trg, encoder_hidden_states, key_padding_mask=key_padding_mask)
+        x2 = self.cross_att_layer_norm(trg + x2)
 
-        residual = encoder_hidden_states
-        x = self.fcn(encoder_hidden_states)
-        x = self.dropout(encoder_hidden_states)
-        x = self.fcn_layer_norm(encoder_hidden_states + residual)
-        # return x
+        x3 = self.fcn(x2)
+        x3 = self.dropout(x3)
+        x3 = self.fcn_layer_norm(x2 + x3)
+        x = x3
+        # x = self.self_attention(decoder_hidden_states, key_padding_mask=key_padding_mask)
+        # x = self.self_att_layer_norm(decoder_hidden_states + residual)
+        # x = self.cross_attention(decoder_hidden_states, key_padding_mask=key_padding_mask)
+        # x = self.cross_att_layer_norm(decoder_hidden_states + residual)
+
+        # residual = encoder_hidden_states
+        # x = self.fcn(encoder_hidden_states)
+        # x = self.dropout(encoder_hidden_states)
+        # x = self.fcn_layer_norm(encoder_hidden_states + residual)
+        # # return x
 
 
         ##YOUR CODE ENDS HERE##
@@ -322,8 +333,8 @@ class TransfomerEncoderDecoderModel(nn.Module):
         trg_embedding = self._add_positions(trg_embedding)
         for layer in self.decoder_layers:
             trg_embedding = layer(
-                    encoder_hidden_states,
                     trg_embedding,
+                    encoder_hidden_states,
                     key_padding_mask=key_padding_mask)
 
         logits = self.out_proj(trg_embedding)
