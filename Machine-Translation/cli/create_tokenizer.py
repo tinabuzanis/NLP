@@ -84,14 +84,14 @@ def main():
     # See more about loading any type of standard or custom dataset (from files, python dict, pandas DataFrame, etc) at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
     logger.info(f"Loading dataset")
-    # raw_datasets = load_dataset(args.dataset_name, args.dataset_config_name)
-    raw_datasets = load_dataset('json', data_files='outp.json')
+    raw_datasets = load_dataset(args.dataset_name, args.dataset_config_name)
+    #raw_datasets = load_dataset('json', data_files='outp.json')
     print(raw_datasets)
     if "validation" not in raw_datasets:
         # will create "train" and "test" subsets
         # fix seed to make sure that the split is reproducible
         # note that we should use the same seed here and in train.py
-        raw_datasets = raw_datasets["train"].train_test_split(test_size=.33, seed=42)
+        raw_datasets = raw_datasets["train"].train_test_split(test_size=2000, seed=42)
 
     if args.source_lang not in raw_datasets["train"][0]["translation"]:
         raise ValueError(f"Language {args.source_lang} not found in dataset")

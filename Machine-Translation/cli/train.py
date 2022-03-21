@@ -419,7 +419,8 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
 
     # Load the datasets
-    raw_datasets = load_dataset('json', data_files='outp.json')
+    raw_datasets = load_dataset(args.dataset_name, args.dataset_config_name)
+    # raw_datasets = load_dataset('json', data_files='outp.json')
     if "validation" not in raw_datasets:
         # will create "train" and "test" subsets
         # fix seed to make sure that the split is reproducible
