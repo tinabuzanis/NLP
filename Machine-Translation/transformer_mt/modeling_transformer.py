@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Copyright 2022 Vladislav Lialin and Namrata Shivagunde 
+# Copyright 2022 Vladislav Lialin and Namrata Shivagunde
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -80,14 +80,14 @@ class TransformerDecoderLayer(nn.Module):
         # 3. Create self.att_layer_norm, self.cross_att_layer_norm, and self.fcn_layer_norm layers using LayerNorm
         # 4. Create self.fcn network using nn.Sequential, nn.ReLU and nn.Linear
         # 5. Create self.dropout layer using nn.Dropout
-        # YOUR CODE STARTS HERE  (our implementation is about 5-8 lines) 
+        # YOUR CODE STARTS HERE  (our implementation is about 5-8 lines)
 
         self.self_attention = MultiHeadAttention(
                 input_size=hidden,
                 hidden=hidden,
                 num_heads=num_heads,
                 causal=False
-                ) 
+                )
         self.cross_attention = MultiHeadAttention(
                 input_size=hidden,
                 hidden=hidden,
@@ -105,8 +105,8 @@ class TransformerDecoderLayer(nn.Module):
         )
         self.fcn_layer_norm = nn.LayerNorm(hidden)
         self.dropout = nn.Dropout(dropout)
-        # YOUR CODE ENDS HERE 
-    
+        # YOUR CODE ENDS HERE
+
     def forward(self, decoder_hidden_states, encoder_hidden_states, key_padding_mask=None):
         """Transformer Decoder Layer
 
@@ -134,31 +134,30 @@ class TransformerDecoderLayer(nn.Module):
         # 10. LayerNorm
         # Note : Please write shape of the tensor for each line of code
         # YOUR CODE STARTS HERE (our implementation is about 10 lines)
-       #  residual = decoder_hidden_states
-        trg = decoder_hidden_states
-        x = self.self_attention(trg, encoder_hidden_states, key_padding_mask=key_padding_mask)
-        x = self.self_att_layer_norm(trg + x)
-       
-        x2 = self.cross_attention(trg, encoder_hidden_states, key_padding_mask=key_padding_mask)
-        x2 = self.cross_att_layer_norm(trg + x2)
 
-        x3 = self.fcn(x2)
-        x3 = self.dropout(x3)
-        x3 = self.fcn_layer_norm(x2 + x3)
-        x = x3
-        # x = self.self_attention(decoder_hidden_states, key_padding_mask=key_padding_mask)
-        # x = self.self_att_layer_norm(decoder_hidden_states + residual)
-        # x = self.cross_attention(decoder_hidden_states, key_padding_mask=key_padding_mask)
-        # x = self.cross_att_layer_norm(decoder_hidden_states + residual)
+        residual = decoder_hidden_states
 
-        # residual = encoder_hidden_states
-        # x = self.fcn(encoder_hidden_states)
-        # x = self.dropout(encoder_hidden_states)
-        # x = self.fcn_layer_norm(encoder_hidden_states + residual)
-        # # return x
+        self_att = self.self_attention(
+                residual,
+                encoder_hidden_states,
+                key_padding_mask=key_padding_mask
+                )
+        self_att = self.self_att_layer_norm(residual + self_att)
 
+        cross_att = self.cross_attention(
+                residual,
+                encoder_hidden_states,
+                key_padding_mask=key_padding_mask
+                )
+        cross_att = self.cross_att_layer_norm(residual + cross_att)
 
-        ##YOUR CODE ENDS HERE##
+        fcn = self.fcn(cross_att)
+        fcn = self.dropout(fcn)
+        fcn = self.fcn_layer_norm(cross_att + fcn)
+
+        x = fcn
+
+        # YOUR CODE ENDS HERE##
         return x
 
 
@@ -210,6 +209,7 @@ class TransfomerEncoderDecoderModel(nn.Module):
 
         self.out_proj = nn.Linear(hidden, tgt_vocab_size)
         self.dropout = nn.Dropout(dropout)
+
         # YOUR CODE ENDS HERE
 
         # Task 2.4 (1 point)
@@ -226,15 +226,15 @@ class TransfomerEncoderDecoderModel(nn.Module):
         # YOUR CODE STARTS HERE (our implementation is 3-6 lines)
         self.encoder_layers = nn.ModuleList(
                 [TransformerEncoderLayer(
-                    hidden=hidden, 
-                    num_heads=num_heads, 
-                    fcn_hidden=fcn_hidden, 
+                    hidden=hidden,
+                    num_heads=num_heads,
+                    fcn_hidden=fcn_hidden,
                     dropout=dropout,
                     )
                     for _ in range(num_layers)
                 ]
-            )
 
+            )
 
         self.decoder_layers = nn.ModuleList(
                 [TransformerDecoderLayer(
@@ -310,16 +310,19 @@ class TransfomerEncoderDecoderModel(nn.Module):
         # 3. Pass source embeddings through the encoder layers, name them encoder_hidden_states
         # 3a. Remember to use key_padding_mask to mask out padding tokens
         # YOUR CODE STARTS HERE
-        src_embedding = self.encoder_embeddings(input_ids) 
+
+        src_embedding = self.encoder_embeddings(input_ids)
         src_embedding = self._add_positions(src_embedding)
+
         for layer in self.encoder_layers:
             src_embedding = layer(src_embedding, key_padding_mask)
+
         encoder_hidden_states = src_embedding
 
         # YOUR CODE ENDS HERE
 
         return encoder_hidden_states
-    
+
     def _decode(self, encoder_hidden_states, decoder_input_ids, key_padding_mask):
         # TASK 2.6 (2 points)
         # 1. Get decoder embeddings using self.decoder_embeddings
@@ -329,8 +332,10 @@ class TransfomerEncoderDecoderModel(nn.Module):
         # 3a. Remember to use key_padding_mask to mask out padding tokens for the encoder inputs
         # 4. use self.out_proj to get output logits, a.k.a log-probabilies of the next translation tokens
         # YOUR CODE STARTS HERE
+
         trg_embedding = self.decoder_embeddings(decoder_input_ids)
         trg_embedding = self._add_positions(trg_embedding)
+
         for layer in self.decoder_layers:
             trg_embedding = layer(
                     trg_embedding,
@@ -339,9 +344,9 @@ class TransfomerEncoderDecoderModel(nn.Module):
 
         logits = self.out_proj(trg_embedding)
 
-        ## YOUR CODE ENDS HERE
+        #  YOUR CODE ENDS HERE
         return logits
-    
+
     ##############################################################################
     # Don't worry about any of the code below this line, but feel free to take a look
     # if you are interested in generation or model saving/loading.
@@ -388,7 +393,7 @@ class TransfomerEncoderDecoderModel(nn.Module):
                 key_padding_mask=key_padding_mask,
                 max_length=max_length,
             )
-        
+
         # beam search only supports batch size 1
         beam_search_generations = []
         for i in range(input_ids.size(0)):

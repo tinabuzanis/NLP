@@ -304,23 +304,43 @@ def preprocess_function(
     targets = target_tokenizer(targets, max_length=max_seq_length - 1, truncation=True)
     target_ids = targets["input_ids"]
 
+    
+    
+    ## ───────────────────────────────────── ▼ ─────────────────────────────────────
+    # {{{                        --     INLINE Q 1     --
+    #···············································································
     # Inline question 4.1:
     # What does the loop below do? Why dos target_tokenizer has max_length=max_seq_length-1?
     # YOUR ANSWER HERE (please limit your answer to 1-2 sentences):
-    #
+    # There loop below shifts the targgget vals to the right 1, so they're offset from decoder_input_ids
+    # Max_seq_len - 1 to account for this shift
     # END OF YOUR ANSWER
+
+    #                                                                            }}}
+    ## ─────────────────────────────────────────────────────────────────────────────
+    
     decoder_input_ids = []
     labels = []
     for target in target_ids:
         decoder_input_ids.append([target_tokenizer.bos_token_id] + target)
         labels.append(target + [target_tokenizer.eos_token_id])
 
+
+
+    ## ───────────────────────────────────── ▼ ─────────────────────────────────────
+    # {{{                         --     INLINE Q2     --
+    #···············································································
     # Inline question 4.2:
     # Why do we need to shift the target text by one token?
     # YOUR ANSWER HERE (please limit your answer to one sentence):
-    #
+    # So it's offset from decoder_input_ids by 1, so that the decoder can leaarn to
+    # predict the next word based on previous ones. 
     # END OF YOUR ANSWER
-    model_inputs["decoder_input_ids"] = decoder_input_ids
+
+    #                                                                            }}}
+    ## ─────────────────────────────────────────────────────────────────────────────
+
+        model_inputs["decoder_input_ids"] = decoder_input_ids
     model_inputs["labels"] = labels
 
     return model_inputs
@@ -369,11 +389,21 @@ def evaluate_model(
             # print('example with idtest =',idtest)
             # print(f'Label = {labels[idtest]}, \n input = ')
 
+            ## ───────────────────────────────────── ▼ ─────────────────────────────────────
+            # {{{                         --     INLINE Q3     --
+            #···············································································
             # Inline question 4.3:
             # What is the diffrence between model.forward() and model.generate()?
             # Do we need to have decoder_input_ids in the .forward() call? In .generate() call?
-            # YOUR ANSWER HERE (please limit your answer to 1-2 sentences):
-            #
+            # model.forward() is a fully differentible function, in which the inputs to the decoderr are the labels shifted by 1.
+            # The decoder always gets the correct token in the next step. For .generate(), the model is used in an autoregressssive way -
+            # each token generated is given as the input in the following step. 
+
+            
+
+            #                                                                            }}}
+            ## ─────────────────────────────────────────────────────────────────────────────
+
             generated_tokens = model.generate(
                 input_ids,
                 bos_token_id=target_tokenizer.bos_token_id,
@@ -450,14 +480,14 @@ def main():
     # Provide all of the TransformerLM initialization arguments from args.
     # Move model to the device we use for training
     # YOUR CODE STARTS HERE
-    model  = TransfomerEncoderDecoderModel(
-            num_layers = args.num_layers,
-            hidden = args.hidden_size,
-            num_heads = args.num_heads,
-            fcn_hidden = args.fcn_hidden,
-            max_seq_len  = args.max_seq_length,
-            src_vocab_size = source_tokenizer.vocab_size,
-            tgt_vocab_size = target_tokenizer.vocab_size
+    model = TransfomerEncoderDecoderModel(
+            num_layers=args.num_layers,
+            hidden=args.hidden_size,
+            num_heads=args.num_heads,
+            fcn_hidden=args.fcn_hidden,
+            max_seq_len=args.max_seq_length,
+            src_vocab_size=source_tokenizer.vocab_size,
+            tgt_vocab_size=target_tokenizer.vocab_size
             ).to(args.device)
 
     # YOUR CODE ENDS HERE
@@ -524,9 +554,15 @@ def main():
     # (readability matters)
     # YOUR CODE STARTS HERE
     train_dataloader = DataLoader(
-        train_dataset, shuffle=True, collate_fn=collation_function_for_seq2seq_wrapped, batch_size=args.batch_size)
+        train_dataset,
+        shuffle=True,
+        collate_fn=collation_function_for_seq2seq_wrapped,
+        batch_size=args.batch_size
+        )
     eval_dataloader = DataLoader(
-        eval_dataset, collate_fn=collation_function_for_seq2seq_wrapped, batch_size=args.batch_size
+        eval_dataset,
+        collate_fn=collation_function_for_seq2seq_wrapped,
+        batch_size=args.batch_size
     )
     # YOUR CODE ENDS HERE
 

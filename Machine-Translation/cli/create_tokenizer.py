@@ -85,7 +85,7 @@ def main():
     # https://huggingface.co/docs/datasets/loading_datasets.html.
     logger.info(f"Loading dataset")
     raw_datasets = load_dataset(args.dataset_name, args.dataset_config_name)
-    #raw_datasets = load_dataset('json', data_files='outp.json')
+    # raw_datasets = load_dataset('json', data_files='outp.json') <- for use with make_dataset.py
     print(raw_datasets)
     if "validation" not in raw_datasets:
         # will create "train" and "test" subsets
@@ -105,10 +105,21 @@ def main():
     # depending on the dataset format, you might need to modify the iterator (line 109)
     # YOUR CODE STARTS HERE
     source_tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
-    source_tokenizer_trainer = BpeTrainer(special_tokens=["[UNK]", "[PAD]", "[BOS]", "[EOS]"], vocab_size=args.vocab_size)
+    source_tokenizer_trainer = BpeTrainer(
+            special_tokens=[
+                "[UNK]",
+                "[PAD]",
+                "[BOS]",
+                "[EOS]"],
+            vocab_size=args.vocab_size
+            )
+
     source_tokenizer.pre_tokenizer = Whitespace()
 
-    source_iterator = (item["translation"][args.source_lang] for item in raw_datasets["train"])
+    source_iterator = (
+            item["translation"][args.source_lang]
+            for item in raw_datasets["train"]
+            )
     source_tokenizer.train_from_iterator(
         source_iterator,
         trainer=source_tokenizer_trainer,
@@ -122,6 +133,7 @@ def main():
     )
     logger.info(f"Saving source to {args.save_dir}/{args.source_lang}_tokenizer")
     source_tokenizer.save_pretrained(os.path.join(args.save_dir, f"{args.source_lang}_tokenizer"))
+
     # YOUR CODE ENDS HERE
 
     logger.info(f"Building tokenizer for the target language (might take a couple of minutes)")
@@ -137,11 +149,22 @@ def main():
     #
     # Above every code line leave a short comment explaining what it does.
     # YOUR CODE STARTS HERE (our implementation is 8 lines of code)
+
     target_tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
-    target_tokenizer_trainer = BpeTrainer(special_tokens=["[UNK]", "[PAD]", "[BOS]", "[EOS]"], vocab_size=args.vocab_size)
+    target_tokenizer_trainer = BpeTrainer(
+            special_tokens=[
+                "[UNK]",
+                "[PAD]",
+                "[BOS]",
+                "[EOS]"],
+            vocab_size=args.vocab_size
+            )
     target_tokenizer.pre_tokenizer = Whitespace()
 
-    target_iterator = (item["translation"][args.target_lang] for item in raw_datasets["train"])
+    target_iterator = (
+            item["translation"][args.target_lang]
+            for item in raw_datasets["train"]
+            )
     target_tokenizer.train_from_iterator(
         target_iterator,
         trainer=target_tokenizer_trainer,
@@ -155,7 +178,7 @@ def main():
     )
     logger.info(f"Saving source to {args.save_dir}/{args.target_lang}_tokenizer")
     target_tokenizer.save_pretrained(os.path.join(args.save_dir, f"{args.target_lang}_tokenizer"))
- 
+
     # YOUR CODE ENDS HERE
 
 

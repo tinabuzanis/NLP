@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Copyright 2022 Vladislav Lialin and Namrata Shivagunde 
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -60,16 +58,16 @@ class MultiHeadAttention(nn.Module):
         # Task 1.1 (1 point)
         # Update this function with cross-attention mechanism
         # If target is None, then target (kv) and source (q) will be same.
-        # Define k, q, v using self.k, self.q and self.v based on if the target exists or not 
+        # Define k, q, v using self.k, self.q and self.v based on if the target exists or not
         # Note : Please write shape of each tensor for each line of code
-        ## YOUR CODE STARTS HERE## ~ 2 lines code
+        #  YOUR CODE STARTS HERE## ~ 2 lines code
+        # q = [batch_size, seq_len, hidden]
         q = self.q(q)
         if kv is None:
             k = v = q
         else:
-            k,v = self.k(kv), self.v(kv)
-
-
+            # k, v = [batch_size, seq_len, hidden]
+            k, v = self.k(kv), self.v(kv)
         # YOUR CODE ENDS HERE
 
         bs, attending_seq, _ = q.shape
@@ -87,16 +85,20 @@ class MultiHeadAttention(nn.Module):
             # Task 1.2 (1 point)
             # Padding
             # Set the scores corresponding to padded positions (key_padding_mask == 1) to -inf
-            # 
             # You might need to reshape the scores to [batch_size, seq_len, seq_len]
             # in this case, remember to reshape them back
             # Our implementation is 3 lines
             # YOUR CODE STARTS HERE
-            # print(scores.shape)
-            # print(scores)
             scores = scores.reshape(bs, -1, attended_seq)
-            scores.masked_fill_(key_padding_mask.bool().unsqueeze(1), float('-inf'))
-            scores = scores.reshape(bs*self.num_heads, attending_seq, attended_seq)
+            scores.masked_fill_(
+                    key_padding_mask.bool().unsqueeze(1),
+                    float('-inf')
+                    )
+            scores = scores.reshape(
+                    bs*self.num_heads,
+                    attending_seq,
+                    attended_seq
+                    )
 
             # YOUR CODE ENDS HERE
 
