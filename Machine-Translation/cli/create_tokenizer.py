@@ -150,7 +150,10 @@ def main():
     # Above every code line leave a short comment explaining what it does.
     # YOUR CODE STARTS HERE (our implementation is 8 lines of code)
 
+    # creates a BPE tokenizer
     target_tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
+
+    # initialize trainer to train BPE model
     target_tokenizer_trainer = BpeTrainer(
             special_tokens=[
                 "[UNK]",
@@ -159,17 +162,22 @@ def main():
                 "[EOS]"],
             vocab_size=args.vocab_size
             )
+
+    # pre-tokenize by splitting on punctuation and whitespace
     target_tokenizer.pre_tokenizer = Whitespace()
 
+    # getting together all of our data to iterate over
     target_iterator = (
             item["translation"][args.target_lang]
             for item in raw_datasets["train"]
             )
+    # training over all of the data obtained in the previous step
     target_tokenizer.train_from_iterator(
         target_iterator,
         trainer=target_tokenizer_trainer,
     )
 
+    # handles tokenization, en/de coding, adding new tokens, manages special toks
     target_tokenizer = transformers.PreTrainedTokenizerFast(
         tokenizer_object=target_tokenizer,
         bos_token="[BOS]",
